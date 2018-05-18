@@ -2,20 +2,28 @@
 
 
 (function() {
-
+  // (function() {}.call(this))
   // Baseline setup
+  // 基本设置、配置
   // --------------
 
   // Establish the root object, `window` in the browser, or `exports` on the server.
+  // 将this 赋值给root， 建立根目录 
+  // root的值: 客户端为 window 服务端为 exports
   var root = this;
 
   // Save the previous value of the `_` variable.
+  // 将以前的变量全局变量 `_` 赋值 previousUnderscore 缓存
   var previousUnderscore = root._;
 
   // Save bytes in the minified (but not gzipped) version:
+  // 缩小直接缓存，此时指的是min.js 并非gzip
+
   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
 
   // Create quick reference variables for speed access to core prototypes.
+  // 缓存变量，便于压缩代码
+  // 同时减少在原型链中查找的次数(优化代码效率)
   var
     push             = ArrayProto.push,
     slice            = ArrayProto.slice,
@@ -24,25 +32,36 @@
 
   // All **ECMAScript 5** native function implementations that we hope to use
   // are declared here.
+  // es5的原生方法， 如浏览器支持 则 undescore 优先使用
   var
-    nativeIsArray      = Array.isArray,
-    nativeKeys         = Object.keys,
-    nativeBind         = FuncProto.bind,
-    nativeCreate       = Object.create;
+    nativeIsArray      = Array.isArray,     // Array.isArray(obj) 确定传值是Array
+    nativeKeys         = Object.keys,       // Object.keys(obj) 返回一个元素为字符串的数组
+    nativeBind         = FuncProto.bind,    // bind 改变this 的指向
+    nativeCreate       = Object.create;     // 创建一个新对象， 使现有的对象来提供新创建对象的__proto__
 
   // Naked function reference for surrogate-prototype-swapping.
   var Ctor = function(){};
 
   // Create a safe reference to the Underscore object for use below.
+  // `_` 是一个构造函数
+  // 将传入的参数(实际要操作的数据)赋值给 this_wrapped 的属性
+
   var _ = function(obj) {
-    if (obj instanceof _) return obj;
+    if (obj instanceof _) return obj; 
+    // 如果 obj 已经是 `_`的构造函数 直接返回 obj
+    // instanceof 用来检测 一个对象 在其原型链中 是否存在一个构造函数的prototype 属性
     if (!(this instanceof _)) return new _(obj);
+    // 如果 不是`_` 函数的实例  就实例化这个对象
     this._wrapped = obj;
+    // 将传入的obj 赋值给 this._wrapped
   };
 
   // Export the Underscore object for **Node.js**, with
   // backwards-compatibility for the old `require()` API. If we're in
   // the browser, add `_` as a global object.
+  // 将上面定义的 `_` 局部变量 赋值给全局变量 `_`
+  // 在服务端(node) 为 export._ 客户端window._
+  // 在服务端 向后兼容 require API
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = _;
@@ -53,11 +72,14 @@
   }
 
   // Current version.
+  // 当前版本号
   _.VERSION = '1.8.2';
 
   // Internal function that returns an efficient (for current engines) version
   // of the passed-in callback, to be repeatedly applied in other Underscore
   // functions.
+  // 根据 this 指向 (context 参数)
+  // 以及 argCount 参数       
   var optimizeCb = function(func, context, argCount) {
     if (context === void 0) return func;
     switch (argCount == null ? 3 : argCount) {
@@ -1446,7 +1468,7 @@
       source + 'return __p;\n';
 
     try {
-      var render = new Function(settings.variable || 'obj', '_', source);
+      var render = new Function(settings.variable || 'obj', `_`, source);
     } catch (e) {
       e.source = source;
       throw e;
